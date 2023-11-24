@@ -14,76 +14,96 @@ async function query(data) {
     }
   );
   const result = await response.blob();
-  return result;
+  return URL.createObjectURL(result);
 }
 
-function Form() {
-  const [textInput, setTextInput] = useState("");
-  const [imageSrc, setImageSrc] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+function ComicPanelForm() {
+  const initialPanelData = Array(10).fill({ text: "", imageSrc: null, isLoading: false });
+  const [panelData, setPanelData] = useState(initialPanelData);
 
-  const handleInputChange = (e) => {
-    setTextInput(e.target.value);
-    console.log(textInput);
+  const handleInputChange = (index, value) => {
+    setPanelData((prevData) => {
+      const newData = [...prevData];
+      newData[index] = { ...newData[index], text: value };
+      return newData;
+    });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Log input text to the console
-    console.log("Input Text:", textInput);
-
+  const handleSubmit = async (index) => {
     try {
-      setIsLoading(true); // Set loading state to true
-      const data = { inputs: textInput };
-      const blob = await query(data);
-      const imageUrl = URL.createObjectURL(blob);
-      setImageSrc(imageUrl);
+      setPanelData((prevData) => {
+        const newData = [...prevData];
+        newData[index] = { ...newData[index], isLoading: true };
+        return newData;
+      });
+
+      const data = { inputs: panelData[index].text };
+      const imageSrc = await query(data);
+
+      setPanelData((prevData) => {
+        const newData = [...prevData];
+        newData[index] = { ...newData[index], imageSrc };
+        return newData;
+      });
     } catch (error) {
-      console.error("Error fetching image:", error);
+      console.error(`Error fetching image for Panel ${index + 1}:`, error);
     } finally {
-      setIsLoading(false); // Set loading state to false after fetch is complete
+      // Set isLoading to false regardless of success or error
+      setPanelData((prevData) => {
+        const newData = [...prevData];
+        newData[index] = { ...newData[index], isLoading: false };
+        return newData;
+      });
     }
   };
 
   return (
     <div>
-      <h2 style={{ marginTop: "30px", textAlign: "center" }}>Text Input Form</h2>
-      <div
-        style={{
-          marginTop: "70px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <form onSubmit={handleSubmit} style={{ width: "300px" }}>
-          <div className="form-group">
-            <label htmlFor="textInput">Enter Text:</label>
-            <input
-              type="text"
-              id="textInput"
-              className="form-control"
-              placeholder="Type something..."
-              value={textInput}
-              onChange={handleInputChange}
-            />
+      <h2 style={{ marginTop: "30px", textAlign: "center" }}>Comic Panel Input</h2>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between" }}>
+        {panelData.map((panel, index) => (
+          <div key={index} style={{  marginBottom: "30px", width: "48%" }}>
+            
+            <div style={{marginLeft: "30px", width: "50%"}}>
+                <input
+                type="text"
+                id={`panelText${index + 1}`}
+                className="form-control"
+                placeholder={`Enter image name`}
+                value={panel.text}
+                onChange={(e) => handleInputChange(index, e.target.value)}
+                style={{marginRight: "20px" }}
+                />
+            </div>
+            <div style={{width: "30%", margin: "-40px 0px 0px 389px"}}>
+                <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => handleSubmit(index)}
+                >
+                Submit Panel {index + 1}
+                </button>
+            </div>
+            {panel.isLoading && <p>Loading...</p>}
+            <div style={{
+                    marginTop: "20px", 
+                    marginLeft: "30px",  
+                    maxWidth: "80%",
+                    border: "1px solid black", 
+                }}>
+                {panel.imageSrc && (
+                <img
+                    src={panel.imageSrc}
+                    alt={`Generated Image for Panel ${index + 1}`}
+                    style={{padding: "0px"}}
+                />
+                )}
+            </div>
           </div>
-          <button type="submit" className="btn btn-primary">
-            Submit
-          </button>
-        </form>
-        {isLoading && <p>Loading...</p>}
-        {imageSrc && (
-          <img
-            src={imageSrc}
-            alt="Generated Image"
-            style={{ marginTop: "20px", marginBottom: "30px", maxWidth: "100%" }}
-          />
-        )}
+        ))}
       </div>
     </div>
   );
 }
 
-export default Form;
+export default ComicPanelForm;
