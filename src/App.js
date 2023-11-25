@@ -6,7 +6,7 @@ function App() {
   return (
     <div
       className="App"
-      style={{ backgroundColor: "black", minHeight: "700px" }}
+      style={{ backgroundColor: "#222121", minHeight: "700px" }}
     >
       <Navbar />
       <Form />

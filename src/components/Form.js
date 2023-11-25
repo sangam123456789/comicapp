@@ -86,6 +86,7 @@ function ComicPanelForm() {
         }}
       >
         {panelData.map((panel, index) => (
+          
           <div
             key={index}
             style={{
@@ -123,6 +124,7 @@ function ComicPanelForm() {
                   backgroundColor: "#309e65",
                   height: "30px",
                   padding: "1rem",
+                  boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.15)",
                 }}
                 variant="contained"
               >
@@ -155,7 +157,9 @@ function ComicPanelForm() {
               )}
             </div>
           </div>
+          
         ))}
+        
       </div>
     </div>
   );
